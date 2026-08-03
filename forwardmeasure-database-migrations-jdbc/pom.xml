@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.forwardmeasure.database</groupId>
+    <artifactId>forwardmeasure-database-migrations-parent</artifactId>
+    <version>${revision}</version>
+  </parent>
+  <artifactId>forwardmeasure-database-migrations-jdbc</artifactId>
+  <name>ForwardMeasure Database Migrations JDBC</name>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>forwardmeasure-database-migrations-api</artifactId>
+    </dependency>
+  </dependencies>
+</project>
