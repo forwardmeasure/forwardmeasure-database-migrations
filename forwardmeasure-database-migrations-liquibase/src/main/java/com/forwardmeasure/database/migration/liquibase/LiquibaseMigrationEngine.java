@@ -16,11 +16,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import liquibase.Contexts;
+import liquibase.GlobalConfiguration;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
+import liquibase.Scope;
 import liquibase.change.CheckSum;
 import liquibase.changelog.ChangeSet;
 import liquibase.changelog.ChangeSetStatus;
@@ -147,7 +150,38 @@ public final class LiquibaseMigrationEngine implements DatabaseMigrationEngine {
     return new MigrationStatus(request.plan().id(), request.target(), clock.instant(), changes);
   }
 
+  /**
+   * {@code openworkflow-migrations} (and any other module packaged as a standalone runnable jar via
+   * {@code maven-jar-plugin}'s {@code addClasspath=true}/{@code classpathPrefix=dependency/}) bakes
+   * a manifest {@code Class-Path} header listing its own {@code dependency/*.jar} siblings - needed
+   * for {@code java -jar} standalone execution, but the JVM's own classloader follows that header
+   * for ANY jar reachable on the classpath, not just when launched via {@code -jar}. A library
+   * consumer that also has a direct dependency on one of those same jars (here,
+   * forwardmeasure-jpa-liquibase, reached both directly and via the manifest-expanded {@code
+   * dependency/} sibling) sees the identical changelog resource at two classpath locations.
+   * Liquibase's {@link ClassLoaderResourceAccessor} enumerates every classpath location for a given
+   * resource path and fails closed by default when it finds more than one - confirmed the hard way,
+   * both locations resolve to byte-identical copies of the same jar, not a real conflict, so this
+   * scopes Liquibase's own documented remedy ({@code GlobalConfiguration#DUPLICATE_FILE_MODE}) to
+   * WARN for the duration of this call only, via {@link Scope#child}, rather than a JVM-wide system
+   * property that would affect unrelated Liquibase usage elsewhere in the same process.
+   */
   private <T> T execute(
+      MigrationRequest request, MigrationOperation operation, LiquibaseWork<T> work) {
+    try {
+      return Scope.child(
+          Map.of(
+              GlobalConfiguration.DUPLICATE_FILE_MODE.getKey(),
+              GlobalConfiguration.DuplicateFileMode.WARN),
+          () -> executeInScope(request, operation, work));
+    } catch (RuntimeException | Error propagate) {
+      throw propagate;
+    } catch (Exception scopeFailure) {
+      throw new IllegalStateException("Liquibase scope initialization failed", scopeFailure);
+    }
+  }
+
+  private <T> T executeInScope(
       MigrationRequest request, MigrationOperation operation, LiquibaseWork<T> work) {
     Objects.requireNonNull(request, "request");
     Objects.requireNonNull(operation, "operation");
