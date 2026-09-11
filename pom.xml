@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.forwardmeasure.platform</groupId>
     <artifactId>forwardmeasure-platform</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <relativePath>../forwardmeasure-platform/pom.xml</relativePath>
   </parent>
   <groupId>com.forwardmeasure.database</groupId>
@@ -32,9 +32,9 @@
     </license>
   </licenses>
   <properties>
-    <revision>1.0.0</revision>
+    <revision>1.1.0</revision>
     <liquibase.version>5.0.3</liquibase.version>
-    <forwardmeasure.testcontainers.version>1.0.0</forwardmeasure.testcontainers.version>
+    <forwardmeasure.testcontainers.version>1.1.0</forwardmeasure.testcontainers.version>
   </properties>
   <modules>
     <module>forwardmeasure-database-migrations-bom</module>
