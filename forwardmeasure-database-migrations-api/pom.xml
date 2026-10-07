@@ -8,4 +8,7 @@
   </parent>
   <artifactId>forwardmeasure-database-migrations-api</artifactId>
   <name>ForwardMeasure Database Migrations API</name>
+  <dependencies>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+  </dependencies>
 </project>
